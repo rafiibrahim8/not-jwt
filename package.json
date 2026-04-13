@@ -1,6 +1,6 @@
 {
   "name": "not-jwt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tiny cross-runtime message signer for Node and Web/Edge runtimes.",
   "type": "module",
   "main": "./dist/index.js",
