@@ -78,6 +78,10 @@ cd python && PYTHONPATH=src python -m unittest discover -s tests
 
 ### Releases
 
+Versions share `major.minor` across languages: the same `major.minor` means the
+same token format and verify rules everywhere. Patch versions can differ, so a
+fix in one language ships without releasing the others.
+
 Push a tag to release one language. Each workflow runs the tests first, and
 the npm, crates.io and PyPI ones check that the tag matches the package version.
 

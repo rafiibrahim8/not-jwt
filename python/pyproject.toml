@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "not-jwt"
-version = "1.0.0"
+version = "1.1.0"
 description = "Tiny HMAC-SHA256 message signer, token-compatible with the not-jwt npm package."
 readme = "README.md"
 license = "MIT"
