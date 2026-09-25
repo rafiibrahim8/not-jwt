@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
     defaults:
       run:
         working-directory: javascript
@@ -34,6 +35,9 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: pnpm
           cache-dependency-path: javascript/pnpm-lock.yaml
+
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -68,6 +72,4 @@ jobs:
 
       - name: Publish to npm
         if: steps.version_check.outputs.exists == 'false'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
