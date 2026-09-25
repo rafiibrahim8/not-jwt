@@ -4,6 +4,10 @@ node_modules/
 # build artifacts
 dist/
 coverage/
+target/
+__pycache__/
+*.egg-info/
+.venv/
 
 # logs
 *.log

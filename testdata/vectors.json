@@ -1,0 +1,243 @@
+{
+  "description": "Shared not-jwt test vectors. token = base64url_nopad(HMAC-SHA256(utf8(key), utf8(message)) || utf8(message)). Every implementation must: produce `token` from sign(message) and return `message` from verify(token) for `valid`; return `message` from verify(token) for `verifyOnly` (up to two trailing '=' are stripped before decoding, whether or not that is the correct padding); and reject every `invalid` token with the given error: \"invalid\" = not the canonical base64url encoding, shorter than 32 bytes, or a message that is not valid UTF-8 (checked after the MAC), \"signature\" = MAC mismatch.",
+  "valid": [
+    {
+      "name": "empty message (signature only, 43 chars)",
+      "key": "secret",
+      "message": "",
+      "token": "-eZuF5tnR65UEI-C-K3os8Jddv0wr95sOVgixTAZYWk"
+    },
+    {
+      "name": "1-byte message (base64 length % 4 == 0)",
+      "key": "secret",
+      "message": "a",
+      "token": "QEjESRGRYEP_YmiV_3jFJidkaFtsuaA84HiGqe_7kkxh"
+    },
+    {
+      "name": "2-byte message (uses '_' in token)",
+      "key": "secret",
+      "message": "hi",
+      "token": "z2vFKu_qDOI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ"
+    },
+    {
+      "name": "3-byte message",
+      "key": "secret",
+      "message": "abc",
+      "token": "mUba1OAOkT_Ivo5dP34RCkqegy-D-wnDRShdeGONig5hYmM"
+    },
+    {
+      "name": "ascii",
+      "key": "secret",
+      "message": "hello",
+      "token": "iKqz7ejTrflNJquQ07r9SiCDBww7zOnAFO4EpEOEfAtoZWxsbw"
+    },
+    {
+      "name": "multi-byte utf-8 key and message",
+      "key": "clé-🔑",
+      "message": "héllo 🌍",
+      "token": "-u08Cg3c6JLH2WhqU3kCJZKosu-AV6GTKzQheZzAfOpow6lsbG8g8J-MjQ"
+    },
+    {
+      "name": "json claims",
+      "key": "super-secret-key",
+      "message": "{\"sub\":\"user_123\",\"role\":\"admin\",\"exp\":1767225600}",
+      "token": "UcUmlaQbvO5tIce03M8zB8IN-7KirX13BrRtVCc_RwJ7InN1YiI6InVzZXJfMTIzIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxNzY3MjI1NjAwfQ"
+    },
+    {
+      "name": "multi-line message",
+      "key": "secret",
+      "message": "line one\nline two\r\nline three\t",
+      "token": "tS3Gdck-fKCOqxDYUMCRv07ZCyT6K7CYT48dUGxnEjZsaW5lIG9uZQpsaW5lIHR3bw0KbGluZSB0aHJlZQk"
+    },
+    {
+      "name": "long message",
+      "key": "secret",
+      "message": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "token": "oR9f6_lhzXCJJtEg0iHr3IV7I4Je81LPcYbIJWBjdGl4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg"
+    },
+    {
+      "name": "leading BOM is preserved",
+      "key": "secret",
+      "message": "\ufeffadmin",
+      "token": "gTl4KDsP27FGtsRV9uXtwrUn_b_zwhf_GEC9o0nplWLvu79hZG1pbg"
+    },
+    {
+      "name": "literal U+FFFD is valid UTF-8",
+      "key": "secret",
+      "message": "caf\ufffd",
+      "token": "4s7bokwR6w1VTjjXpP5PTFJl-yGzn6LjfP_eUs65pYdjYWbvv70"
+    }
+  ],
+  "verifyOnly": [
+    {
+      "name": "empty message, correctly padded (=)",
+      "key": "secret",
+      "message": "",
+      "token": "-eZuF5tnR65UEI-C-K3os8Jddv0wr95sOVgixTAZYWk="
+    },
+    {
+      "name": "2-byte message, correctly padded (==)",
+      "key": "secret",
+      "message": "hi",
+      "token": "z2vFKu_qDOI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ=="
+    },
+    {
+      "name": "2-byte message, under-padded (= where == is correct)",
+      "key": "secret",
+      "message": "hi",
+      "token": "z2vFKu_qDOI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ="
+    },
+    {
+      "name": "3-byte message, correctly padded (=)",
+      "key": "secret",
+      "message": "abc",
+      "token": "mUba1OAOkT_Ivo5dP34RCkqegy-D-wnDRShdeGONig5hYmM="
+    },
+    {
+      "name": "ascii, correctly padded (==)",
+      "key": "secret",
+      "message": "hello",
+      "token": "iKqz7ejTrflNJquQ07r9SiCDBww7zOnAFO4EpEOEfAtoZWxsbw=="
+    },
+    {
+      "name": "3-byte message, over-padded (== where = is correct)",
+      "key": "secret",
+      "message": "abc",
+      "token": "mUba1OAOkT_Ivo5dP34RCkqegy-D-wnDRShdeGONig5hYmM=="
+    }
+  ],
+  "invalid": [
+    {
+      "name": "empty token",
+      "key": "secret",
+      "token": "",
+      "error": "invalid"
+    },
+    {
+      "name": "decodes to fewer than 32 bytes",
+      "key": "secret",
+      "token": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ",
+      "error": "invalid"
+    },
+    {
+      "name": "32 zero bytes (empty message, wrong MAC)",
+      "key": "secret",
+      "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "error": "signature"
+    },
+    {
+      "name": "wrong key",
+      "key": "not-the-secret",
+      "token": "iKqz7ejTrflNJquQ07r9SiCDBww7zOnAFO4EpEOEfAtoZWxsbw",
+      "error": "signature"
+    },
+    {
+      "name": "message byte flipped",
+      "key": "secret",
+      "token": "iKqz7ejTrflNJquQ07r9SiCDBww7zOnAFO4EpEOEfAtoZWxsbg",
+      "error": "signature"
+    },
+    {
+      "name": "MAC byte flipped",
+      "key": "secret",
+      "token": "iaqz7ejTrflNJquQ07r9SiCDBww7zOnAFO4EpEOEfAtoZWxsbw",
+      "error": "signature"
+    },
+    {
+      "name": "MAC truncated by one byte",
+      "key": "secret",
+      "token": "qrPt6NOt-U0mq5DTuv1KIIMHDDvM6cAU7gSkQ4R8C2hlbGxv",
+      "error": "signature"
+    },
+    {
+      "name": "message byte appended",
+      "key": "secret",
+      "token": "iKqz7ejTrflNJquQ07r9SiCDBww7zOnAFO4EpEOEfAtoZWxsbyE",
+      "error": "signature"
+    },
+    {
+      "name": "three '=' of padding",
+      "key": "secret",
+      "token": "z2vFKu_qDOI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ===",
+      "error": "invalid"
+    },
+    {
+      "name": "'=' inside the token",
+      "key": "secret",
+      "token": "z2vFKu_qDO=I7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ",
+      "error": "invalid"
+    },
+    {
+      "name": "standard base64 alphabet ('/' instead of '_')",
+      "key": "secret",
+      "token": "z2vFKu/qDOI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ",
+      "error": "invalid"
+    },
+    {
+      "name": "embedded newline",
+      "key": "secret",
+      "token": "z2vFKu_qDO\nI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ",
+      "error": "invalid"
+    },
+    {
+      "name": "embedded CR",
+      "key": "secret",
+      "token": "z2vFKu_qDO\rI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ",
+      "error": "invalid"
+    },
+    {
+      "name": "embedded space",
+      "key": "secret",
+      "token": "z2vFKu_qDO I7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ",
+      "error": "invalid"
+    },
+    {
+      "name": "embedded invalid character",
+      "key": "secret",
+      "token": "z2vFKu_qDO!I7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ",
+      "error": "invalid"
+    },
+    {
+      "name": "trailing junk",
+      "key": "secret",
+      "token": "z2vFKu_qDOI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQ!!",
+      "error": "invalid"
+    },
+    {
+      "name": "non-zero trailing bits",
+      "key": "secret",
+      "token": "z2vFKu_qDOI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaR",
+      "error": "invalid"
+    },
+    {
+      "name": "length % 4 == 1",
+      "key": "secret",
+      "token": "z2vFKu_qDOI7ShCvdBhY3JbnSOag8RnIWdONdUytYJxoaQAAA",
+      "error": "invalid"
+    },
+    {
+      "name": "valid MAC, message truncated mid-character",
+      "key": "secret",
+      "token": "mSQ1icMogek8yeZaeRAtBt28sLMPNIR-tiuj3N1ajNZjYWbD",
+      "error": "invalid"
+    },
+    {
+      "name": "valid MAC, lone continuation byte",
+      "key": "secret",
+      "token": "JM4hCuiMzFQzQrK3aUzTrUY_kALLxInuPzKrzRom_P-A",
+      "error": "invalid"
+    },
+    {
+      "name": "valid MAC, UTF-16 surrogate encoded in UTF-8",
+      "key": "secret",
+      "token": "HWarpABW5gjT4ZDT-tuiL9hqt3HuEnImVysSKntVJdHtoIA",
+      "error": "invalid"
+    },
+    {
+      "name": "valid MAC, overlong encoding",
+      "key": "secret",
+      "token": "nqB-VU0wPfYe9uZSWVqcmKr4Yq8KxcZowCQGskitBtvArw",
+      "error": "invalid"
+    }
+  ]
+}

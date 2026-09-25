@@ -13,6 +13,26 @@ describe("web", () => {
     );
   });
 
+  it.each([123, {}, [], ["secret"], new Uint8Array(0), null, undefined])(
+    "throws for non-string key %o",
+    async (key) => {
+      await expect(notJwtWeb(key as unknown as string)).rejects.toThrow(
+        "Key is required, and must not be empty",
+      );
+    },
+  );
+
+  it.each([undefined, null, 123, {}, new Uint8Array([104, 105])])(
+    "throws when signing non-string message %o",
+    async (message) => {
+      const jwt = await notJwtWeb("secret");
+
+      await expect(jwt.sign(message as unknown as string)).rejects.toThrow(
+        "Message must be a string",
+      );
+    },
+  );
+
   it("signs and verifies a valid signed message", async () => {
     const jwt = await notJwtWeb("secret");
     const signed = await jwt.sign("hello");
@@ -35,6 +55,17 @@ describe("web", () => {
 
     await expect(jwt.verify("%%")).rejects.toThrow("Invalid signed message");
   });
+
+  it.each([undefined, null, 123, {}])(
+    "throws for non-string signed message %o",
+    async (signedMessage) => {
+      const jwt = await notJwtWeb("secret");
+
+      await expect(
+        jwt.verify(signedMessage as unknown as string),
+      ).rejects.toThrow("Invalid signed message");
+    },
+  );
 
   it("throws for too-short decoded payload", async () => {
     const jwt = await notJwtWeb("secret");

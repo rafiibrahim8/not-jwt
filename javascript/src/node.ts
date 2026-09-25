@@ -5,7 +5,7 @@ function returnOf<T>(fn: () => T): T {
 }
 
 export async function notJwtNode(key: string) {
-  if (!key) {
+  if (typeof key !== "string" || !key) {
     throw new Error("Key is required, and must not be empty");
   }
 
@@ -13,6 +13,9 @@ export async function notJwtNode(key: string) {
 
   return {
     async sign(message: string): Promise<string> {
+      if (typeof message !== "string") {
+        throw new TypeError("Message must be a string");
+      }
       const signatureBuffer = createHmac("sha256", keyBuffer)
         .update(message)
         .digest();
@@ -24,7 +27,10 @@ export async function notJwtNode(key: string) {
     async verify(signedMessage: string): Promise<string> {
       const providedBytes = returnOf(() => {
         try {
-          return Buffer.from(signedMessage, "base64url");
+          // Buffer.from skips invalid characters, so require a canonical re-encode.
+          const unpadded = signedMessage.replace(/={1,2}$/, "");
+          const bytes = Buffer.from(unpadded, "base64url");
+          return bytes.toString("base64url") === unpadded ? bytes : null;
         } catch {
           return null;
         }
@@ -44,7 +50,13 @@ export async function notJwtNode(key: string) {
         throw new Error("Signature verification failed");
       }
 
-      return messageBuffer.toString("utf-8");
+      // Reject invalid UTF-8 instead of replacing it with U+FFFD.
+      const message = messageBuffer.toString("utf-8");
+      if (!Buffer.from(message, "utf-8").equals(messageBuffer)) {
+        throw new Error("Invalid signed message");
+      }
+
+      return message;
     },
   };
 }

@@ -1,0 +1,18 @@
+[package]
+name = "not-jwt"
+version = "1.0.0"
+edition = "2021"
+description = "Tiny HMAC-SHA256 message signer, token-compatible with the not-jwt npm package."
+license = "MIT"
+repository = "https://github.com/rafiibrahim8/not-jwt"
+readme = "README.md"
+keywords = ["hmac", "jwt", "signature", "token", "crypto"]
+categories = ["cryptography", "authentication"]
+
+[dependencies]
+base64 = "0.22"
+hmac = "0.12"
+sha2 = "0.10"
+
+[dev-dependencies]
+serde_json = "1"

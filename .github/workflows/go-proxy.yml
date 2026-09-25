@@ -1,0 +1,37 @@
+name: Publish to Go proxy
+
+on:
+  push:
+    tags:
+      - "go/v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go/go.mod
+          cache-dependency-path: go/go.mod
+
+      - name: Run tests
+        working-directory: go
+        run: |
+          go vet ./...
+          go test -race ./...
+
+      # Go modules are served straight from git tags; this makes the proxy
+      # fetch the new version now so it shows up on pkg.go.dev immediately.
+      - name: Request version from proxy.golang.org
+        working-directory: ${{ runner.temp }}
+        env:
+          GOPROXY: https://proxy.golang.org
+        run: |
+          MODULE="$(cd "$GITHUB_WORKSPACE/go" && go list -m)"
+          go list -m "${MODULE}@${GITHUB_REF#refs/tags/go/}"

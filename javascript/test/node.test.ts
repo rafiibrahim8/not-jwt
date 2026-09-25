@@ -12,6 +12,26 @@ describe("node", () => {
     );
   });
 
+  it.each([123, {}, [], ["secret"], new Uint8Array(0), null, undefined])(
+    "throws for non-string key %o",
+    async (key) => {
+      await expect(notJwtNode(key as unknown as string)).rejects.toThrow(
+        "Key is required, and must not be empty",
+      );
+    },
+  );
+
+  it.each([undefined, null, 123, {}, new Uint8Array([104, 105])])(
+    "throws when signing non-string message %o",
+    async (message) => {
+      const jwt = await notJwtNode("secret");
+
+      await expect(jwt.sign(message as unknown as string)).rejects.toThrow(
+        "Message must be a string",
+      );
+    },
+  );
+
   it("signs and verifies a valid signed message", async () => {
     const jwt = await notJwtNode("secret");
     const signed = await jwt.sign("hello");
