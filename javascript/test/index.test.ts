@@ -24,8 +24,12 @@ describe("index", () => {
   });
 
   it("uses web implementation when process is unavailable", async () => {
+    // notJwt checks the runtime before its first await. Restore process before
+    // awaiting: vitest's worker crashes if it needs process in the meantime.
     vi.stubGlobal("process", undefined);
-    const jwt = await notJwt("secret");
+    const pending = notJwt("secret");
+    vi.unstubAllGlobals();
+    const jwt = await pending;
     const signed = await jwt.sign("hello");
 
     await expect(jwt.verify(signed)).resolves.toBe("hello");

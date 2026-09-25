@@ -1,5 +1,5 @@
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
+const decoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 const BINARY_CHUNK_SIZE = 0x8000;
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -18,7 +18,13 @@ function toBase64Url(bytes: Uint8Array): string {
 }
 
 function fromBase64Url(base64Url: string): Uint8Array | null {
-  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  if (typeof base64Url !== "string") {
+    return null;
+  }
+  // atob accepts "+", "/", whitespace and non-zero trailing bits, so require a
+  // canonical re-encode.
+  const unpadded = base64Url.replace(/={1,2}$/, "");
+  const base64 = unpadded.replace(/-/g, "+").replace(/_/g, "/");
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
 
   try {
@@ -27,7 +33,7 @@ function fromBase64Url(base64Url: string): Uint8Array | null {
     for (let i = 0; i < binary.length; i += 1) {
       bytes[i] = binary.charCodeAt(i);
     }
-    return bytes;
+    return toBase64Url(bytes) === unpadded ? bytes : null;
   } catch {
     return null;
   }
@@ -45,7 +51,7 @@ function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
 }
 
 export async function notJwtWeb(key: string) {
-  if (!key) {
+  if (typeof key !== "string" || !key) {
     throw new Error("Key is required, and must not be empty");
   }
 
@@ -59,6 +65,9 @@ export async function notJwtWeb(key: string) {
 
   return {
     async sign(message: string): Promise<string> {
+      if (typeof message !== "string") {
+        throw new TypeError("Message must be a string");
+      }
       const messageBytes = encoder.encode(message);
       const signature = await crypto.subtle.sign(
         "HMAC",
@@ -88,7 +97,11 @@ export async function notJwtWeb(key: string) {
         throw new Error("Signature verification failed");
       }
 
-      return decoder.decode(messageBytes);
+      try {
+        return decoder.decode(messageBytes);
+      } catch {
+        throw new Error("Invalid signed message");
+      }
     },
   };
 }
